@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Endereços</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9fafc;
+        }
+
+        .container {
+            max-width: 920px;
+            margin: 40px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        h1 {
+            color: #2a4d69;
+            text-align: center;
+        }
+
+        #backBtn{
+            background-color: #e0e6ea;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        #backBtn:hover {
+            background-color: #cfd6dc;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            padding: 14px;
+            border-radius: 8px;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-row {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .form-row input,
+        .form-row select {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-row span {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #444;
+            text-align: left;
+        }
+
+        .form-action {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }        
+
+        button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #saveBTn,
+        #updateBtn {
+            background-color: #2a4d69;
+            color: white;
+        }
+
+        #saveBTn:hover,
+        #updateBtn:hover {
+            background-color: #1d3a52;
+        }
+
+        .btn-secondary {
+            background-color: #e0e6ea;
+            color: #222;
+        }
+
+        .btn-secondary:hover {
+            filter: brightness(0.95);
+        }
+
+        /* tabela */
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            table-layout: fixed;
+            /* força ajuste proporcional */
+            min-width: 400px;
+            word-wrap: break-word;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            /* melhora legibilidade quando há várias linhas */
+            white-space: normal;
+            /* permite quebra de linha */
+            word-wrap: break-word;
+            word-break: break-word; 
+            overflow-wrap: break-word;
+            /* para navegadores modernos */
+        }
+
+        th {
+            background: #f0f4f7;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            /* permite botões quebrarem linha se necessário */
+        }
+
+        .actions button {
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            white-space: nowrap;
+            background-color: #2a4d69;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .actions button:hover {
+            background-color: #1d3a52;
+        }
+
+        /* responsivo */
+        @media (max-width: 600px){
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                display: none;
+            }
+
+            tr {
+                margin-bottom: 16px;
+                background: #fff;
+                padding: 12px;
+                border-radius: 8px;
+                box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                padding: 6px 10px;
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+            }
+
+            td:last-child {
+                border-bottom: 0;
+            }
+
+            td::before {
+                content: attr(data-label);
+                flex-basis: 40%;
+                font-weight: bold;
+                color: #444;
+            }
+
+            .actions {
+                justify-content: flex-end;
+                gap: 6px;
+            }
+
+            @media (max-width: 420px){
+                .form-row span {
+                    font-size: 12px;
+                }
+
+                .form-row input,
+                .form-row select {
+                    padding: 8px;
+                    font-size: 13px;
+                }
+
+                button {
+                    padding: 7px 10px;
+                    font-size: 13px;                    
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Gerenciamento de Endereços</h1>
+    <button id="backBtn" onclick="window.location.href='/students'">Voltar para Students</button>
+
+    <div class="form-container">
+        <input id="addressId" type="hidden" />
+        <label class="form-row">
+            <span>Aluno</span>
+            <select id="studentSelect" required>
+                <option value="">Selecione um estudante</option>
+            </select>
+        </label>
+        <label class="form-row">
+            <span>CEP</span>
+            <input id="zipCode" type="text" placeholder="CEP" required />
+        </label>
+        <label class="form-row">
+            <span>Rua</span>
+            <input id="street" type="text" placeholder="Rua" required />
+        </label>
+        <label class="form-row">
+            <span>Cidade</span>
+            <input id="city" type="text" placeholder="Cidade" required />
+        </label>
+        <label class="form-row">
+            <span>Estado</span>
+            <input id="state" type="text" placeholder="Estado" required />
+        </label>
+
+        <div class="form-actions">
+            <button id="saveBtn" onclick="saveAddress()">Adicionar</button>
+            <button id="updateBtn" onclick="updateAddress()" style="display:none;">Atualizar</button>
+            <button class="btn-secondary" onclick="resetForm()" style="display:none;">Limpar</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Aluno</th>
+                    <th>CEP</th>
+                    <th>Rua</th>
+                    <th>Cidade</th>
+                    <th>Estado</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="addressTableBody"></tbody>
+        </table>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = '/api/v1/addresses';
+    const STUDENTS_API = '/api/v1/students';
+    const CEP_API = '/api/v1/cep';
+
+    // Carrega estudantes no dropdown (não na tabela)
+    async function populateStudentSelect() {
+        try {
+            const resp = await fetch(STUDENTS_API);
+            if (!resp.ok) throw new Error('Erro ao carregar estudantes');
+            const students = await resp.json();
+            const select = document.getElementById('studentSelect');
+            
+            students.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.studentId ?? s.id;
+                option.textContent = `${s.firstName} ${s.lastName}`;
+                select.appendChild(option);
+            });
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao carregar estudantes.');
+        }
+    }
+
+    async function loadAddresses() {
+        try {
+            const resp = await fetch(API_URL);
+            if (!resp.ok) throw new Error('Erro ao carregar endereços');
+            const addresses = await resp.json();
+            const tbody = document.getElementById('addressTableBody');
+            tbody.innerHTML = '';
+
+            addresses.forEach(a => {
+                const id = a.id;
+                const student = a.student ?? {};
+                const studentName = ((student.firstName ?? '') + ' ' + (student.lastName ?? '')).trim() || '-';
+                const street = a.street || '';
+                const city = a.city || '';
+                const state = a.state || '';
+                const zipCode = a.zipCode || '';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td data-label="Aluno">${studentName}</td>
+                    <td data-label="CEP">${zipCode}</td>
+                    <td data-label="Rua">${street}</td>
+                    <td data-label="Cidade">${city}</td>
+                    <td data-label="Estado">${state}</td>
+                    <td data-label="Ações" class="actions">
+                        <button onclick="editAddress(${id})">Editar</button>
+                        <button onclick="deleteAddress(${id})">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao carregar endereços.');
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('addressId').value = '';
+        document.getElementById('studentSelect').value = '';
+        document.getElementById('street').value = '';
+        document.getElementById('city').value = '';
+        document.getElementById('state').value = '';
+        document.getElementById('zipCode').value = '';
+        document.getElementById('saveBtn').style.display = 'inline-block';
+        document.getElementById('updateBtn').style.display = 'none';
+    }
+
+    async function saveAddress() {
+        const studentId = document.getElementById('studentSelect').value;
+        const street = document.getElementById('street').value;
+        const city = document.getElementById('city').value;
+        const state = document.getElementById('state').value;
+        const zipCode = document.getElementById('zipCode').value;
+
+        if (!studentId || !street || !city || !state || !zipCode) {
+            alert('Preencha todos os campos!');
+            return;
+        }
+
+        const address = { student: { studentId: Number(studentId) }, street, city, state, zipCode };
+        try {
+            const resp = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(address)
+            });
+
+            if (resp.ok) {
+                alert('Endereço salvo!');
+                resetForm();
+                loadAddresses();
+            } else {
+                alert('Erro ao salvar endereço');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Falha de comunicação com o servidor.');
+        }
+    }
+
+    async function editAddress(id) {
+        try {
+            const resp = await fetch(`${API_URL}/${id}`);
+            if (!resp.ok) {
+                alert('Endereço não encontrado!');
+                return;
+            }
+            const a = await resp.json();
+
+            document.getElementById('addressId').value = a.id;
+            document.getElementById('studentSelect').value = a.student?.studentId || '';
+            document.getElementById('street').value = a.street || '';
+            document.getElementById('city').value = a.city || '';
+            document.getElementById('state').value = a.state || '';
+            document.getElementById('zipCode').value = a.zipCode || '';
+
+            document.getElementById('saveBtn').style.display = 'none';
+            document.getElementById('updateBtn').style.display = 'inline-block';
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao carregar endereço.');
+        }
+    }
+
+    async function updateAddress() {
+        const addressId = document.getElementById('addressId').value;
+        const studentId = document.getElementById('studentSelect').value;
+        const street = document.getElementById('street').value;
+        const city = document.getElementById('city').value;
+        const state = document.getElementById('state').value;
+        const zipCode = document.getElementById('zipCode').value;
+
+        if (!addressId || !studentId || !street || !city || !state || !zipCode) {
+            alert('Preencha todos os campos!');
+            return;
+        }
+
+        const address = { id: Number(addressId), student: { studentId: Number(studentId) }, street, city, state, zipCode };
+        try {
+            const resp = await fetch(`${API_URL}/${addressId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(address)
+            });
+
+            if (resp.ok) {
+                alert('Endereço atualizado!');
+                resetForm();
+                loadAddresses();
+            } else {
+                alert('Erro ao atualizar endereço');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Falha de comunicação com o servidor.');
+        }
+    }
+
+    async function deleteAddress(id) {
+        if (!confirm('Deseja realmente excluir este endereço?')) return;
+        try {
+            const resp = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            if (resp.ok) {
+                alert('Endereço excluído!');
+                loadAddresses();
+            } else {
+                alert('Erro ao excluir endereço');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Falha de comunicação com o servidor.');
+        }
+    }
+
+    document.getElementById('zipCode').addEventListener('blur', async function() {
+    const cep = this.value.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+
+    try {
+        const resp = await fetch(`${CEP_API}/${cep}`);
+        if (!resp.ok) {
+        console.error('CEP não encontrado, status:', resp.status);
+        return;
+        }
+        const data = await resp.json();
+        console.log('Resposta CEP (raw):', data);
+
+        const streetEl = document.getElementById('street');
+        const cityEl = document.getElementById('city');
+        const stateEl = document.getElementById('state');
+
+        // Checa se existem elementos com esses IDs
+        console.log('Elementos encontrados:', {
+        streetEl: !!streetEl,
+        cityEl: !!cityEl,
+        stateEl: !!stateEl
+        });
+
+        if (!streetEl || !cityEl || !stateEl) {
+        console.error('Elemento(s) não encontrado(s) ou ID duplicado.');
+        return;
+        }
+
+        // Mapeamento com fallback para campos do ViaCEP e do DTO do backend
+        const streetVal = (data.street ?? data.logradouro ?? data.logradouro_bairro ?? '').trim();
+        const cityVal   = (data.city   ?? data.localidade ?? '').trim();
+        const stateVal  = (data.state  ?? data.uf ?? '').trim();
+
+        // Atribui tanto .value quanto attribute 'value'
+        streetEl.value = streetVal;
+        streetEl.setAttribute('value', streetVal);
+
+        cityEl.value = cityVal;
+        cityEl.setAttribute('value', cityVal);
+
+        stateEl.value = stateVal;
+        stateEl.setAttribute('value', stateVal);
+    } catch (err) {
+        console.error('Erro ao buscar CEP:', err);
+    }
+    });
+
+    // Inicializa a página
+    populateStudentSelect();
+    loadAddresses();
+  </script>
+</body>
+
+</html>

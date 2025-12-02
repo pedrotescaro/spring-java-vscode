@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Estudantes</title>
+    <style>
+        html, body {
+          height: 100%;
+          margin: 0;
+          font-family: Arial, sans-serif;
+          background-color: #f9fafc;
+        }
+
+        .container {
+            max-width: 920px;
+            margin: 40px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        h1 { color: #2a4d69; text-align: center;}
+
+        #logoutBtn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            float: right;
+            margin-top: -30px;
+            font-size: 14px;
+        }
+        #logoutBtn:hover {
+            background-color: #c0392b;
+        }
+
+        .form-container {
+            background: white;
+            padding: 14px;
+            border-radius: 8px;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-row {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .form-row input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-row span.label {
+            margin-bottom: 6px;
+            display: block;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-border {
+            border-color: #e74c3c !important;
+            background-color: #fff6f6;
+        }
+
+        .form-actions {
+            display: flex; margin-top: 6px;
+            justify-content: center; flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 12px; border-radius: 6px; border: none;
+            cursor: pointer; font-size: 14px;
+        }
+        #saveBtun, #updateBtn { background-color: #2a4d69; color: white;}
+        #saveBtun:hover, #updateBtn:hover { background-color: #1d3a52; }
+        .btn-secondary { background: #e0e6ea; color: #222}
+        .btn-secondary:hover { filter: brightness(0.95); }
+
+        .table-wrap { width: 100%; overflow-x: auto;}
+        table {
+            width: 100%; border-collapse: collapse; background: white;
+        }
+        th, td {
+            border: 1px solid #ddd; padding: 10px;
+            text-align: left; vertical-align: middle;
+        }
+        th { background: #f0f4f7; }
+        .actions {
+            display: flex; gap: 8px; align-items: center;
+        }
+        .actions button {
+            padding: 6px 8px; border-radius: 4px; font-size: 13px;
+            background-color: #2a4d69; color: white;
+            border: none; cursor: pointer;
+        }
+        .actions button:hover { background-color: #1d3a52; }
+
+        @media (max-width: 420px) {
+            .form-row span { font-size: 12px; }
+            .form-row input { padding: 8px; font-size: 13px; }
+            button { padding: 7px 10px; font-size: 13px;}
+        }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gerenciamento de Estudantes</h1>
+    <div style="width: 100%; text-align: right;">
+        <button id="logoutBtn" onclick="window.location.href='/logout'">Logout</button>
+    </div>
+
+    <div class="form-container">
+        <input id="studentId" type="hidden" />
+
+        <label class="form-row">
+            <span class="label">Primeiro Nome</span>
+            <input id="firstName" type="text" placeholder="Primeiro Nome" required>
+            <div id="firstNameError" class="error-message">o primeiro nome é obrigatório.</div>
+        </label>
+
+        <label class="form-row">
+            <span class="label">Último Nome</span>
+            <input id="lastName" type="text" placeholder="Último Nome" required>
+            <div id="lastNameError" class="error-message">o último nome é obrigatório.</div>
+        </label>
+
+        <label class="form-row">
+            <span class="label">Email</span>
+            <input id="email" type="text" placeholder="exemplo@email.com" required>
+            <div id="emailError" class="error-message">o e-mail é obrigatório.</div>
+        </label>
+
+        <label class="form-actions">
+            <button id="saveBtn" onclick="saveStudent()">Adicionar</button>
+            <button id="updateBtn" onclick="updateStudent()" style="display:none;">Atualizar</button>
+            <button class="btn-secondary" onclick="resetForm()">Limpar</button>
+            <button class="btn-secondary" onclick="window.location.href='/address'">Endereço</button>            
+        </label>
+    </div>
+
+    <!-- TABELA -->
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Primeiro Nome</th>
+                    <th>Último Nome</th>
+                    <th>Email</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="studentsTableBody"></tbody>
+        </table>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = '/api/v1/students';
+
+    function showError(fieldId, message) {
+        const input = document.getElementById(fieldId);
+        const error = document.getElementById(fieldId + 'Error');
+        input.classList.add('error-border');
+        error.innerText = message;
+        error.style.display = 'block';
+    }
+
+    function clearError(fieldId) {
+        const input = document.getElementById(fieldId);
+        const error = document.getElementById(fieldId + 'Error');
+        input.classList.remove('error-border');
+        error.style.display = 'none';
+    }
+
+    function validateFields(firstName, lastName, email){
+        let valid = true;
+        clearError('firstName');
+        clearError('lastName');
+        clearError('email');
+
+        if (!firstName) {
+            showError('firstName', 'O campo Primeiro Nome é obrigatório.');
+            valid = false;
+        }
+
+        if (!lastName) {
+            showError('lastName', 'O campo Último Nome é obrigatório.');
+            valid = false;
+        }
+
+        if (!email) {
+            showError('email', 'O campo E-mail é obrigatório.');
+            valid = false;
+        } else {
+            const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+            if (!emailRegex.test(email)) {
+                showError('email', 'Digite um e-mail válido (ex: exemplo@email.com).');
+                valid = false;
+            }
+        }
+        return valid;
+    }
+
+    // Verificação de e-mail duplicado em tempo real
+    document.getElementById('email').addEventListener('blur', async function() {
+        const email = this.value.trim();
+        const studentId = document.getElementById('studentId').value;
+
+        clearError('email');
+        if (!email) return;
+
+        try {
+            const resp = await fetch(`${API_URL}/check-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, studentId: studentId || null })
+            });
+            if (resp.status === 409) {
+                showError('email', 'Este e-mail já está cadastrado. Use outro endereço.');
+            }
+        } catch {
+            console.log("Falha ao verificar o e-mail.");
+        }
+    });
+
+    async function loadStudents() {
+        try {
+            const resp = await fetch(API_URL);
+            if (!resp.ok) throw new Error('Erro ao carregar lista');
+            const students = await resp.json();
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+            students.forEach(s => {
+                const id = s.studentId ?? s.id;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${id}</td>
+                    <td>${s.firstName}</td>
+                    <td>${s.lastName}</td>
+                    <td>${s.email}</td>
+                    <td class="actions">
+                        <button onclick="editStudent(${id})">Editar</button>
+                        <button onclick="deleteStudent(${id})">Excluir</button>
+                        <button onclick="window.location.href='/address?studentId=${id}'">Endereço</button>
+                    </td>`;
+                tbody.appendChild(row);
+            });
+        } catch {
+            alert('Erro ao carregar estudantes.');
+        }
+    }
+
+    async function saveStudent() {
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+
+        if (!validateFields(firstName, lastName, email)) return;
+
+        const student = { firstName, lastName, email }; // criado corretamente
+
+        try {
+        const resp = await fetch(`${API_URL}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(student)
+        });
+
+        if (resp.status === 409) {
+            showError('email', 'Este e-mail já está cadastrado. Use outro endereço.');
+            return;
+        }
+
+        if (resp.ok) {
+            alert('Registro adicionado com sucesso!');
+            resetForm();
+            loadStudents();
+        } else {
+            alert('Erro ao salvar o registro');
+        }
+        } catch {
+        alert('Falha de comunicação com o servidor.');
+        }
+    }
+
+    async function updateStudent() {
+        const id = document.getElementById('studentId').value;
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+
+        if (!validateFields(firstName, lastName, email)) return;
+
+        const student = { studentId: Number(id), firstName, lastName, email };
+
+        try {
+          const resp = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(student)
+          });
+
+          if (resp.status === 409) {
+                showError('email', 'Este e-mail já está cadastrado. Use outro endereço.');
+                return;
+          }
+
+          if (resp.ok) {
+                alert('Registro atualizado com sucesso!');
+                resetForm();
+                loadStudents();
+          } else {
+                alert('Erro ao atualizar o registro');
+          }
+        } catch {
+            alert('Falha de comunicação com o servidor.');
+        }
+    }
+
+        async function editStudent(id) {
+            try {
+                const resp = await fetch(`${API_URL}/${id}`);
+                if (!resp.ok) { alert("Registro não encontrado."); return;}
+                const s = await resp.json();
+                document.getElementById('studentId').value = s.studentId ?? s.id ?? '';
+                document.getElementById('firstName').value = s.firstName ?? '';
+                document.getElementById('lastName').value = s.lastName ?? '';
+                document.getElementById('email').value = s.email ?? '';
+
+                clearError('firstName');
+                clearError('lastName');
+                clearError('email');
+
+                document.getElementById('saveBtn').style.display = 'none';
+                document.getElementById('updateBtn').style.display = 'inline-block';
+            } catch {
+                alert("Erro ao carregar os dados do estudante.");
+            }            
+        }
+
+        async function deleteStudent(id){
+            if (!confirm("Deseja realmente excluir este registro?")) return;
+            try {
+                const resp = await fetch(`${API_URL}/${id}`, { method: 'DELETE'});
+                if (resp.ok) {
+                    alert("Registro excluido com sucesso!");
+                    loadStudents();
+                    resetForm();
+                } else {
+                    alert("Erro ao excluir o registro");
+                }
+            } catch {
+                alert("Falha de comunicação com o servidor.");
+            }
+        }
+
+        function resetForm(){
+            document.getElementById('studentId').value = '';
+            ['firstName','lastName','email'].forEach(clearError);
+            document.getElementById('firstName').value = '';
+            document.getElementById('lastName').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('updateBtn').style.display = 'none';
+        }
+
+    loadStudents();
+  </script>
+</body>
+</html>
