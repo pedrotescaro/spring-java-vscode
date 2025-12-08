@@ -3,18 +3,25 @@
 
 package com.spring.spring.controller;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.spring.spring.dto.CepResponse;
 import com.spring.spring.entity.AddressEntity;
 import com.spring.spring.entity.StudentEntity;
 import com.spring.spring.repository.AddressRepository;
 import com.spring.spring.repository.StudentRepository;
 import com.spring.spring.service.ViaCepService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @Controller
 @CrossOrigin(origins = "*")
@@ -37,6 +44,11 @@ public class RouterController {
     @GetMapping("/students")
     public String studentsPage() {
         return "students";
+    }
+
+    @GetMapping("/teachers")
+    public String teachersPage() {
+        return "teachers";
     }
 
     @GetMapping("/address")

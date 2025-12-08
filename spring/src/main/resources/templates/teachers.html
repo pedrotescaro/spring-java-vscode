@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Endereços</title>
+    <title>Cadastro de Professores</title>
     <style>
         * {
             margin: 0;
@@ -49,6 +49,12 @@
             background-clip: text;
         }
 
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
         .btn {
             padding: 10px 20px;
             border-radius: 10px;
@@ -69,6 +75,16 @@
         .btn-secondary:hover {
             background: #cbd5e0;
             transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 101, 101, 0.4);
         }
 
         .form-container {
@@ -97,8 +113,7 @@
             color: #4a5568;
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input {
             padding: 12px 16px;
             border: 2px solid #e2e8f0;
             border-radius: 10px;
@@ -107,8 +122,7 @@
             font-family: inherit;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -117,6 +131,18 @@
         .form-group input[readonly] {
             background-color: #f7fafc;
             cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-border {
+            border-color: #e53e3e !important;
+            background-color: #fff5f5;
         }
 
         .form-actions {
@@ -272,46 +298,65 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📍 Gerenciamento de Endereços</h1>
-            <button class="btn btn-secondary" onclick="window.location.href='/students'">⬅️ Voltar para Estudantes</button>
+            <h1>👨‍🏫 Cadastro de Professores</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="window.location.href='/students'">📚 Estudantes</button>
+                <button class="btn btn-danger" onclick="window.location.href='/logout'">🚪 Logout</button>
+            </div>
         </div>
 
         <div class="form-container">
-            <input id="addressId" type="hidden" />
+            <input id="teacherId" type="hidden" />
             
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="studentSelect">Aluno</label>
-                    <select id="studentSelect" required>
-                        <option value="">Selecione um estudante</option>
-                    </select>
+                    <label for="firstName">Primeiro Nome</label>
+                    <input id="firstName" type="text" placeholder="Digite o primeiro nome" />
+                    <span id="firstNameError" class="error-message">Campo obrigatório</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Último Nome</label>
+                    <input id="lastName" type="text" placeholder="Digite o último nome" />
+                    <span id="lastNameError" class="error-message">Campo obrigatório</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" placeholder="email@escola.com" />
+                    <span id="emailError" class="error-message">Campo obrigatório</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Disciplina</label>
+                    <input id="subject" type="text" placeholder="Ex.: Matemática" />
                 </div>
 
                 <div class="form-group">
                     <label for="zipCode">CEP</label>
-                    <input id="zipCode" type="text" placeholder="00000000" maxlength="8" required />
+                    <input id="zipCode" type="text" placeholder="00000000" maxlength="8" />
                     <span class="cep-loading" id="cepLoading">Buscando CEP...</span>
                 </div>
 
                 <div class="form-group">
                     <label for="street">Rua</label>
-                    <input id="street" type="text" placeholder="Nome da rua" required />
+                    <input id="street" type="text" placeholder="Nome da rua" />
                 </div>
 
                 <div class="form-group">
                     <label for="city">Cidade</label>
-                    <input id="city" type="text" placeholder="Nome da cidade" required />
+                    <input id="city" type="text" placeholder="Nome da cidade" />
                 </div>
 
                 <div class="form-group">
                     <label for="state">Estado</label>
-                    <input id="state" type="text" placeholder="UF" maxlength="2" required />
+                    <input id="state" type="text" placeholder="UF" maxlength="2" />
                 </div>
             </div>
 
             <div class="form-actions">
-                <button id="saveBtn" onclick="saveAddress()">➕ Adicionar</button>
-                <button id="updateBtn" onclick="updateAddress()" style="display:none;">✏️ Atualizar</button>
+                <button id="saveBtn" onclick="saveTeacher()">➕ Adicionar</button>
+                <button id="updateBtn" style="display:none;" onclick="updateTeacher()">✏️ Atualizar</button>
                 <button class="btn-secondary-action" onclick="resetForm()">🔄 Limpar</button>
             </div>
         </div>
@@ -320,7 +365,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Aluno</th>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Disciplina</th>
                         <th>CEP</th>
                         <th>Rua</th>
                         <th>Cidade</th>
@@ -328,201 +376,211 @@
                         <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody id="addressTableBody"></tbody>
+                <tbody id="teacherTableBody"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const API_URL = '/api/v1/addresses';
-        const STUDENTS_API = '/api/v1/students';
+        const API_URL = '/api/v1/teachers';
         const CEP_API = '/api/v1/cep';
 
-        async function populateStudentSelect() {
-            try {
-                const resp = await fetch(STUDENTS_API);
-                if (!resp.ok) throw new Error('Erro ao carregar estudantes');
-                const students = await resp.json();
-                const select = document.getElementById('studentSelect');
-                select.innerHTML = '<option value="">Selecione um estudante</option>';
-                
-                students.forEach(s => {
-                    const option = document.createElement('option');
-                    option.value = s.studentId ?? s.id;
-                    option.textContent = `${s.firstName} ${s.lastName}`;
-                    select.appendChild(option);
-                });
-
-                // Verifica se há studentId na URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const studentId = urlParams.get('studentId');
-                if (studentId) {
-                    select.value = studentId;
-                }
-            } catch (e) {
-                console.error(e);
-                alert('Erro ao carregar estudantes.');
+        function showError(id, message) {
+            const input = document.getElementById(id);
+            const error = document.getElementById(id + 'Error');
+            input.classList.add('error-border');
+            if (error) {
+                error.innerText = message;
+                error.style.display = 'block';
             }
         }
 
-        async function loadAddresses() {
+        function clearError(id) {
+            const input = document.getElementById(id);
+            const error = document.getElementById(id + 'Error');
+            input.classList.remove('error-border');
+            if (error) error.style.display = 'none';
+        }
+
+        function validate(firstName, lastName, email) {
+            let ok = true;
+            ['firstName', 'lastName', 'email'].forEach(clearError);
+            if (!firstName) { showError('firstName', 'Primeiro nome é obrigatório'); ok = false; }
+            if (!lastName) { showError('lastName', 'Último nome é obrigatório'); ok = false; }
+            if (!email) {
+                showError('email', 'Email é obrigatório');
+                ok = false;
+            } else {
+                const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                if (!emailRegex.test(email)) { showError('email', 'Email inválido'); ok = false; }
+            }
+            return ok;
+        }
+
+        document.getElementById('email').addEventListener('blur', async function() {
+            const email = this.value.trim();
+            const id = document.getElementById('teacherId').value;
+            if (!email) return;
+            try {
+                const resp = await fetch(`${API_URL}/check-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, id: id || null })
+                });
+                if (resp.status === 409) {
+                    showError('email', 'Este email já está em uso.');
+                }
+            } catch (e) {
+                console.error('Falha ao verificar email', e);
+            }
+        });
+
+        async function loadTeachers() {
             try {
                 const resp = await fetch(API_URL);
-                if (!resp.ok) throw new Error('Erro ao carregar endereços');
-                const addresses = await resp.json();
-                const tbody = document.getElementById('addressTableBody');
+                if (!resp.ok) throw new Error();
+                const teachers = await resp.json();
+                const tbody = document.getElementById('teacherTableBody');
                 tbody.innerHTML = '';
-
-                if (addresses.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #a0aec0;">Nenhum endereço cadastrado ainda.</td></tr>';
+                
+                if (teachers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #a0aec0;">Nenhum professor cadastrado ainda.</td></tr>';
                     return;
                 }
 
-                addresses.forEach(a => {
-                    const id = a.id;
-                    const student = a.student ?? {};
-                    const studentName = ((student.firstName ?? '') + ' ' + (student.lastName ?? '')).trim() || '-';
-                    const street = a.street || '';
-                    const city = a.city || '';
-                    const state = a.state || '';
-                    const zipCode = a.zipCode || '';
-
+                teachers.forEach(t => {
+                    const id = t.id;
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${studentName}</td>
-                        <td>${zipCode}</td>
-                        <td>${street}</td>
-                        <td>${city}</td>
-                        <td>${state}</td>
+                        <td>${id}</td>
+                        <td>${(t.firstName || '') + ' ' + (t.lastName || '')}</td>
+                        <td>${t.email || ''}</td>
+                        <td>${t.subject || ''}</td>
+                        <td>${t.zipCode || ''}</td>
+                        <td>${t.street || ''}</td>
+                        <td>${t.city || ''}</td>
+                        <td>${t.state || ''}</td>
                         <td class="actions">
-                            <button class="btn-edit" onclick="editAddress(${id})">✏️ Editar</button>
-                            <button class="btn-delete" onclick="deleteAddress(${id})">🗑️ Excluir</button>
+                            <button class="btn-edit" onclick="editTeacher(${id})">✏️ Editar</button>
+                            <button class="btn-delete" onclick="deleteTeacher(${id})">🗑️ Excluir</button>
                         </td>
                     `;
                     tbody.appendChild(row);
                 });
             } catch (e) {
                 console.error(e);
-                alert('Erro ao carregar endereços.');
+                alert('❌ Erro ao carregar professores');
             }
         }
 
-        function resetForm() {
-            document.getElementById('addressId').value = '';
-            document.getElementById('studentSelect').value = '';
-            document.getElementById('street').value = '';
-            document.getElementById('city').value = '';
-            document.getElementById('state').value = '';
-            document.getElementById('zipCode').value = '';
-            document.getElementById('saveBtn').style.display = 'inline-block';
-            document.getElementById('updateBtn').style.display = 'none';
-        }
-
-        async function saveAddress() {
-            const studentId = document.getElementById('studentSelect').value;
+        async function saveTeacher() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const zipCode = document.getElementById('zipCode').value.trim();
             const street = document.getElementById('street').value.trim();
             const city = document.getElementById('city').value.trim();
             const state = document.getElementById('state').value.trim();
-            const zipCode = document.getElementById('zipCode').value.trim();
 
-            if (!studentId || !street || !city || !state || !zipCode) {
-                alert('⚠️ Preencha todos os campos!');
-                return;
-            }
+            if (!validate(firstName, lastName, email)) return;
+            const teacher = { firstName, lastName, email, subject, zipCode, street, city, state };
 
-            const address = { student: { studentId: Number(studentId) }, street, city, state, zipCode };
             try {
-                const resp = await fetch(API_URL, {
+                const resp = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(address)
+                    body: JSON.stringify(teacher)
                 });
-
-                if (resp.ok) {
-                    alert('✅ Endereço salvo com sucesso!');
-                    resetForm();
-                    loadAddresses();
-                } else {
-                    alert('❌ Erro ao salvar endereço');
-                }
+                if (resp.status === 409) { showError('email', 'Este email já está em uso.'); return; }
+                if (!resp.ok) throw new Error();
+                alert('✅ Professor cadastrado com sucesso!');
+                resetForm();
+                loadTeachers();
             } catch (e) {
                 console.error(e);
-                alert('❌ Falha de comunicação com o servidor.');
+                alert('❌ Erro ao salvar professor');
             }
         }
 
-        async function editAddress(id) {
+        async function editTeacher(id) {
             try {
                 const resp = await fetch(`${API_URL}/${id}`);
-                if (!resp.ok) {
-                    alert('❌ Endereço não encontrado!');
-                    return;
-                }
-                const a = await resp.json();
-
-                document.getElementById('addressId').value = a.id;
-                document.getElementById('studentSelect').value = a.student?.studentId || '';
-                document.getElementById('street').value = a.street || '';
-                document.getElementById('city').value = a.city || '';
-                document.getElementById('state').value = a.state || '';
-                document.getElementById('zipCode').value = a.zipCode || '';
+                if (!resp.ok) { alert('❌ Professor não encontrado'); return; }
+                const t = await resp.json();
+                document.getElementById('teacherId').value = t.id ?? '';
+                document.getElementById('firstName').value = t.firstName || '';
+                document.getElementById('lastName').value = t.lastName || '';
+                document.getElementById('email').value = t.email || '';
+                document.getElementById('subject').value = t.subject || '';
+                document.getElementById('zipCode').value = t.zipCode || '';
+                document.getElementById('street').value = t.street || '';
+                document.getElementById('city').value = t.city || '';
+                document.getElementById('state').value = t.state || '';
 
                 document.getElementById('saveBtn').style.display = 'none';
                 document.getElementById('updateBtn').style.display = 'inline-block';
             } catch (e) {
                 console.error(e);
-                alert('❌ Erro ao carregar endereço.');
+                alert('❌ Erro ao carregar professor');
             }
         }
 
-        async function updateAddress() {
-            const addressId = document.getElementById('addressId').value;
-            const studentId = document.getElementById('studentSelect').value;
+        async function updateTeacher() {
+            const id = document.getElementById('teacherId').value;
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const zipCode = document.getElementById('zipCode').value.trim();
             const street = document.getElementById('street').value.trim();
             const city = document.getElementById('city').value.trim();
             const state = document.getElementById('state').value.trim();
-            const zipCode = document.getElementById('zipCode').value.trim();
 
-            if (!addressId || !studentId || !street || !city || !state || !zipCode) {
-                alert('⚠️ Preencha todos os campos!');
-                return;
-            }
+            if (!id) { alert('⚠️ Selecione um professor para atualizar'); return; }
+            if (!validate(firstName, lastName, email)) return;
 
-            const address = { id: Number(addressId), student: { studentId: Number(studentId) }, street, city, state, zipCode };
+            const teacher = { id: Number(id), firstName, lastName, email, subject, zipCode, street, city, state };
+
             try {
-                const resp = await fetch(`${API_URL}/${addressId}`, {
-                    method: 'PUT',
+                const resp = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(address)
+                    body: JSON.stringify(teacher)
                 });
-
-                if (resp.ok) {
-                    alert('✅ Endereço atualizado com sucesso!');
-                    resetForm();
-                    loadAddresses();
-                } else {
-                    alert('❌ Erro ao atualizar endereço');
-                }
+                if (resp.status === 409) { showError('email', 'Este email já está em uso.'); return; }
+                if (!resp.ok) throw new Error();
+                alert('✅ Professor atualizado com sucesso!');
+                resetForm();
+                loadTeachers();
             } catch (e) {
                 console.error(e);
-                alert('❌ Falha de comunicação com o servidor.');
+                alert('❌ Erro ao atualizar professor');
             }
         }
 
-        async function deleteAddress(id) {
-            if (!confirm('⚠️ Deseja realmente excluir este endereço?')) return;
+        async function deleteTeacher(id) {
+            if (!confirm('⚠️ Deseja realmente excluir este professor?')) return;
             try {
                 const resp = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                if (resp.ok) {
-                    alert('✅ Endereço excluído com sucesso!');
-                    loadAddresses();
-                } else {
-                    alert('❌ Erro ao excluir endereço');
-                }
+                if (!resp.ok) throw new Error();
+                alert('✅ Professor excluído com sucesso!');
+                loadTeachers();
+                resetForm();
             } catch (e) {
                 console.error(e);
-                alert('❌ Falha de comunicação com o servidor.');
+                alert('❌ Erro ao excluir professor');
             }
+        }
+
+        function resetForm() {
+            document.getElementById('teacherId').value = '';
+            ['firstName', 'lastName', 'email', 'subject', 'zipCode', 'street', 'city', 'state'].forEach(id => {
+                document.getElementById(id).value = '';
+                clearError(id);
+            });
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('updateBtn').style.display = 'none';
         }
 
         document.getElementById('zipCode').addEventListener('input', function() {
@@ -543,20 +601,18 @@
                     return;
                 }
                 const data = await resp.json();
-
                 document.getElementById('street').value = (data.logradouro || data.street || '').trim();
                 document.getElementById('city').value = (data.localidade || data.city || '').trim();
                 document.getElementById('state').value = (data.uf || data.state || '').trim().toUpperCase();
                 
                 loadingEl.style.display = 'none';
-            } catch (err) {
-                console.error('Erro ao buscar CEP:', err);
+            } catch (e) {
+                console.error('Erro ao buscar CEP', e);
                 loadingEl.style.display = 'none';
             }
         });
 
-        populateStudentSelect();
-        loadAddresses();
+        loadTeachers();
     </script>
 </body>
 </html>
