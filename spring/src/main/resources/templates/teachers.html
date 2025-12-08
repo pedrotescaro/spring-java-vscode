@@ -133,6 +133,68 @@
             cursor: not-allowed;
         }
 
+        .subjects-container {
+            grid-column: 1 / -1;
+        }
+
+        .subject-field-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .subject-field-wrapper .form-group {
+            flex: 1;
+        }
+
+        .btn-add-subject {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px dashed #cbd5e0;
+            background: #f7fafc;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            height: 46px;
+            margin-top: 24px;
+            flex-shrink: 0;
+        }
+
+        .btn-add-subject:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-remove-subject {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 50px;
+            height: 46px;
+            margin-top: 24px;
+            flex-shrink: 0;
+        }
+
+        .btn-remove-subject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+        }
+
         .error-message {
             color: #e53e3e;
             font-size: 12px;
@@ -327,9 +389,16 @@
                     <span id="emailError" class="error-message">Campo obrigatório</span>
                 </div>
 
-                <div class="form-group">
-                    <label for="subject">Disciplina</label>
-                    <input id="subject" type="text" placeholder="Ex.: Matemática" />
+                <div class="form-group subjects-container">
+                    <label>Disciplinas</label>
+                    <div id="subjectsContainer">
+                        <div class="subject-field-wrapper">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input class="subject-input" type="text" placeholder="Ex.: Matemática" />
+                            </div>
+                            <button type="button" class="btn-add-subject" onclick="addSubjectField()" title="Adicionar outra disciplina">➕</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -384,6 +453,74 @@
     <script>
         const API_URL = '/api/v1/teachers';
         const CEP_API = '/api/v1/cep';
+
+        function addSubjectField() {
+            const container = document.getElementById('subjectsContainer');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'subject-field-wrapper';
+            wrapper.innerHTML = `
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input class="subject-input" type="text" placeholder="Ex.: Matemática" />
+                </div>
+                <button type="button" class="btn-remove-subject" onclick="removeSubjectField(this)" title="Remover disciplina">🗑️</button>
+            `;
+            container.appendChild(wrapper);
+        }
+
+        function removeSubjectField(button) {
+            const wrapper = button.closest('.subject-field-wrapper');
+            const container = document.getElementById('subjectsContainer');
+            if (container.children.length > 1) {
+                wrapper.remove();
+            } else {
+                alert('⚠️ É necessário ter pelo menos uma disciplina.');
+            }
+        }
+
+        function getSubjects() {
+            const inputs = document.querySelectorAll('.subject-input');
+            const subjects = Array.from(inputs)
+                .map(input => input.value.trim())
+                .filter(subject => subject.length > 0);
+            return subjects.join(', ');
+        }
+
+        function setSubjects(subjectsString) {
+            const container = document.getElementById('subjectsContainer');
+            container.innerHTML = '';
+            
+            if (!subjectsString || subjectsString.trim() === '') {
+                // Se não houver disciplinas, adiciona um campo vazio
+                const wrapper = document.createElement('div');
+                wrapper.className = 'subject-field-wrapper';
+                wrapper.innerHTML = `
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input class="subject-input" type="text" placeholder="Ex.: Matemática" />
+                    </div>
+                    <button type="button" class="btn-add-subject" onclick="addSubjectField()" title="Adicionar outra disciplina">➕</button>
+                `;
+                container.appendChild(wrapper);
+                return;
+            }
+
+            const subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+            
+            subjects.forEach((subject, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'subject-field-wrapper';
+                const isLast = index === subjects.length - 1;
+                wrapper.innerHTML = `
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input class="subject-input" type="text" placeholder="Ex.: Matemática" value="${subject}" />
+                    </div>
+                    ${isLast 
+                        ? '<button type="button" class="btn-add-subject" onclick="addSubjectField()" title="Adicionar outra disciplina">➕</button>'
+                        : '<button type="button" class="btn-remove-subject" onclick="removeSubjectField(this)" title="Remover disciplina">🗑️</button>'
+                    }
+                `;
+                container.appendChild(wrapper);
+            });
+        }
 
         function showError(id, message) {
             const input = document.getElementById(id);
@@ -450,12 +587,16 @@
 
                 teachers.forEach(t => {
                     const id = t.id;
+                    const subjects = (t.subject || '').split(',').map(s => s.trim()).filter(s => s);
+                    const subjectsDisplay = subjects.length > 0 
+                        ? subjects.map(s => `<span style="display: inline-block; background: #edf2f7; padding: 4px 8px; border-radius: 6px; margin: 2px; font-size: 12px;">${s}</span>`).join('')
+                        : '-';
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${id}</td>
                         <td>${(t.firstName || '') + ' ' + (t.lastName || '')}</td>
                         <td>${t.email || ''}</td>
-                        <td>${t.subject || ''}</td>
+                        <td style="max-width: 200px;">${subjectsDisplay}</td>
                         <td>${t.zipCode || ''}</td>
                         <td>${t.street || ''}</td>
                         <td>${t.city || ''}</td>
@@ -477,7 +618,7 @@
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const subject = document.getElementById('subject').value.trim();
+            const subject = getSubjects();
             const zipCode = document.getElementById('zipCode').value.trim();
             const street = document.getElementById('street').value.trim();
             const city = document.getElementById('city').value.trim();
@@ -512,7 +653,7 @@
                 document.getElementById('firstName').value = t.firstName || '';
                 document.getElementById('lastName').value = t.lastName || '';
                 document.getElementById('email').value = t.email || '';
-                document.getElementById('subject').value = t.subject || '';
+                setSubjects(t.subject || '');
                 document.getElementById('zipCode').value = t.zipCode || '';
                 document.getElementById('street').value = t.street || '';
                 document.getElementById('city').value = t.city || '';
@@ -531,7 +672,7 @@
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const subject = document.getElementById('subject').value.trim();
+            const subject = getSubjects();
             const zipCode = document.getElementById('zipCode').value.trim();
             const street = document.getElementById('street').value.trim();
             const city = document.getElementById('city').value.trim();
@@ -575,10 +716,11 @@
 
         function resetForm() {
             document.getElementById('teacherId').value = '';
-            ['firstName', 'lastName', 'email', 'subject', 'zipCode', 'street', 'city', 'state'].forEach(id => {
+            ['firstName', 'lastName', 'email', 'zipCode', 'street', 'city', 'state'].forEach(id => {
                 document.getElementById(id).value = '';
                 clearError(id);
             });
+            setSubjects('');
             document.getElementById('saveBtn').style.display = 'inline-block';
             document.getElementById('updateBtn').style.display = 'none';
         }
