@@ -4,13 +4,18 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.spring.spring.entity.StudentEntity;
+import com.spring.spring.repository.AddressRepository;
 import com.spring.spring.repository.StudentRepository;
 
 @Service
 public class StudentService {
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
 
     public List<StudentEntity> getStudents(){
         return studentRepository.findAll();
@@ -31,10 +36,15 @@ public class StudentService {
         }
     }
 
+    @Transactional
     public void delete(Long id) {
         Long studentId = id;
         if (studentId != null) {
-            studentRepository.deleteById(studentId);
+            Optional<StudentEntity> student = studentRepository.findById(studentId);
+            if (student.isPresent()) {
+                addressRepository.deleteByStudent(student.get());
+                studentRepository.deleteById(studentId);
+            }
         }
     }
 

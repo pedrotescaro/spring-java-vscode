@@ -7,4 +7,5 @@ import java.util.Optional;
 //método usado para buscar o endereço associado a um estudante específico
 public interface AddressRepository extends JpaRepository<AddressEntity, Long> {
     Optional<AddressEntity> findByStudent(StudentEntity student);
+    void deleteByStudent(StudentEntity student);
 }
