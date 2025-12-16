@@ -60,8 +60,47 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .header-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .actions button svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .empty-state-icon svg {
+            width: 48px;
+            height: 48px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         h1 {
@@ -344,7 +383,6 @@
         }
 
         .empty-state-icon {
-            font-size: 48px;
             margin-bottom: 16px;
             opacity: 0.5;
         }
@@ -443,15 +481,19 @@
     <div class="container">
         <div class="glass-card header">
             <div class="header-left">
-                <div class="header-icon">📚</div>
+                <div class="header-icon">
+                    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
+                </div>
                 <h1>Gerenciamento de Estudantes</h1>
             </div>
             <div class="nav-buttons">
                 <button class="btn btn-secondary" onclick="window.location.href='/teachers'">
-                    <span>👨‍🏫</span> Professores
+                    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Professores
                 </button>
                 <button class="btn btn-danger" onclick="window.location.href='/logout'">
-                    <span>🚪</span> Sair
+                    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Sair
                 </button>
             </div>
         </div>
@@ -482,16 +524,20 @@
 
             <div class="form-actions">
                 <button id="saveBtn" class="btn btn-primary" onclick="saveStudent()">
-                    <span>➕</span> Adicionar
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Adicionar
                 </button>
                 <button id="updateBtn" class="btn btn-primary" onclick="updateStudent()" style="display:none;">
-                    <span>✏️</span> Atualizar
+                    <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                    Atualizar
                 </button>
                 <button class="btn btn-secondary" onclick="resetForm()">
-                    <span>🔄</span> Limpar
+                    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Limpar
                 </button>
                 <button class="btn btn-secondary" onclick="window.location.href='/address'">
-                    <span>📍</span> Endereços
+                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Endereços
                 </button>
             </div>
         </div>
@@ -521,6 +567,13 @@
 
     <script>
         const API_URL = '/api/v1/students';
+
+        const ICONS = {
+            edit: '<svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>',
+            delete: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+            location: '<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+            inbox: '<svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>'
+        };
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -606,7 +659,7 @@
                         <tr>
                             <td colspan="5">
                                 <div class="empty-state">
-                                    <div class="empty-state-icon">📭</div>
+                                    <div class="empty-state-icon">${ICONS.inbox}</div>
                                     <p>Nenhum estudante cadastrado ainda.</p>
                                 </div>
                             </td>
@@ -623,9 +676,9 @@
                         <td>${s.lastName}</td>
                         <td>${s.email}</td>
                         <td class="actions">
-                            <button class="btn-edit" onclick="editStudent(${id})">✏️ Editar</button>
-                            <button class="btn-delete" onclick="deleteStudent(${id})">🗑️ Excluir</button>
-                            <button class="btn-address" onclick="window.location.href='/address?studentId=${id}'">📍 Endereço</button>
+                            <button class="btn-edit" onclick="editStudent(${id})">${ICONS.edit} Editar</button>
+                            <button class="btn-delete" onclick="deleteStudent(${id})">${ICONS.delete} Excluir</button>
+                            <button class="btn-address" onclick="window.location.href='/address?studentId=${id}'">${ICONS.location} Endereço</button>
                         </td>`;
                     tbody.appendChild(row);
                 });

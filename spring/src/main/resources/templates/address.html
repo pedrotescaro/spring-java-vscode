@@ -60,8 +60,66 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .header-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .actions button svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .empty-state-icon svg {
+            width: 48px;
+            height: 48px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .cep-loading svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         h1 {
@@ -332,7 +390,6 @@
         }
 
         .empty-state-icon {
-            font-size: 48px;
             margin-bottom: 16px;
             opacity: 0.5;
         }
@@ -418,11 +475,14 @@
     <div class="container">
         <div class="glass-card header">
             <div class="header-left">
-                <div class="header-icon">📍</div>
+                <div class="header-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
                 <h1>Gerenciamento de Endereços</h1>
             </div>
             <button class="btn btn-secondary" onclick="window.location.href='/students'">
-                <span>⬅️</span> Voltar para Estudantes
+                <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Voltar para Estudantes
             </button>
         </div>
 
@@ -441,7 +501,10 @@
                 <div class="form-group">
                     <label for="zipCode">CEP</label>
                     <input id="zipCode" type="text" placeholder="00000000" maxlength="8" required />
-                    <span class="cep-loading" id="cepLoading">🔍 Buscando CEP...</span>
+                    <span class="cep-loading" id="cepLoading">
+                        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        Buscando CEP...
+                    </span>
                 </div>
 
                 <div class="form-group">
@@ -462,13 +525,16 @@
 
             <div class="form-actions">
                 <button id="saveBtn" class="btn btn-primary" onclick="saveAddress()">
-                    <span>➕</span> Adicionar
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Adicionar
                 </button>
                 <button id="updateBtn" class="btn btn-primary" onclick="updateAddress()" style="display:none;">
-                    <span>✏️</span> Atualizar
+                    <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                    Atualizar
                 </button>
                 <button class="btn btn-secondary" onclick="resetForm()">
-                    <span>🔄</span> Limpar
+                    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Limpar
                 </button>
             </div>
         </div>
@@ -501,6 +567,12 @@
         const API_URL = '/api/v1/addresses';
         const STUDENTS_API = '/api/v1/students';
         const CEP_API = '/api/v1/cep';
+
+        const ICONS = {
+            edit: '<svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>',
+            delete: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+            inbox: '<svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>'
+        };
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -548,7 +620,7 @@
                         <tr>
                             <td colspan="6">
                                 <div class="empty-state">
-                                    <div class="empty-state-icon">📭</div>
+                                    <div class="empty-state-icon">${ICONS.inbox}</div>
                                     <p>Nenhum endereço cadastrado ainda.</p>
                                 </div>
                             </td>
@@ -573,8 +645,8 @@
                         <td>${city}</td>
                         <td>${state}</td>
                         <td class="actions">
-                            <button class="btn-edit" onclick="editAddress(${id})">✏️ Editar</button>
-                            <button class="btn-delete" onclick="deleteAddress(${id})">🗑️ Excluir</button>
+                            <button class="btn-edit" onclick="editAddress(${id})">${ICONS.edit} Editar</button>
+                            <button class="btn-delete" onclick="deleteAddress(${id})">${ICONS.delete} Excluir</button>
                         </td>
                     `;
                     tbody.appendChild(row);
